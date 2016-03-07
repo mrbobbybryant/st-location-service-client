@@ -20,24 +20,36 @@ class Client {
    * Returns a list of locations that match the provided suggest query.
    * @method suggestLocations
    * @param {LocationSuggestRequest} locationSuggestRequest the request object
-   * @param {Function} onSuccess a function that takes an array  of location suggest objects.
-   * @param {Function} onError a function that should be called if the request fails.
-   *                  The function should take a string which is the error message if there is one.
    */
-  suggestLocations(locationSuggestRequest, onSuccess, onError) {
-    this.executeRequest(locationSuggestRequest, onSuccess, onError);
+  suggestLocations(locationSuggestRequest) {
+    let self = this;
+    return new Promise(function(resolve, reject){
+      self.executeRequest(locationSuggestRequest)
+      .then(function(response){
+        resolve(response);
+      })
+      .catch(function(error){
+        reject(error);
+      });
+    });
   }
 
   /**
    * Returns a list of locations that match the provided proximity query.
    * @method findLocationByProximity
    * @param {ProximityRequest} proximityRequest the request object
-   * @param {Function} onSuccess a function that takes an array  of location suggest objects.
-   * @param {Function} onError a function that should be called if the request fails.
-   *                  The function should take a string which is the error message if there is one.
    */
-  findLocationByProximity(proximityRequest, onSuccess, onError) {
-    this.executeRequest(proximityRequest, onSuccess, onError);
+  findLocationByProximity(proximityRequest) {
+    let self = this;
+    return new Promise(function(resolve, reject){
+      self.executeRequest(proximityRequest)
+      .then(function(response){
+        resolve(response);
+      })
+      .catch(function(error){
+        reject(error);
+      });
+    });
   }
 
   /**
@@ -45,27 +57,27 @@ class Client {
    * binds the on success and error functions to the request.
    * @method executeRequest
    * @param {ClientRequest} request the request to make
-   * @param {Function} onSuccess the function to be called on success
-   * @param {Function} onError the function to be called on error
    */
-   executeRequest(request, onSuccess, onError) {
+   executeRequest(request) {
      var url = this.clientConfig.baseUrl + "/" + request.createRequest();
-     nanoajax.ajax({
-       url: url,
-       cors: true,
-       method: "GET"
-     }, function (responseCode, responseText) {
-       if (responseCode === 200) {
-         var responseJson;
-         try {
-           responseJson = JSON.parse(responseText);
-         } catch (error) {
-           onError(responseText);
+     return new Promise(function(resolve,reject){
+       nanoajax.ajax({
+         url: url,
+         cors: true,
+         method: "GET"
+       }, function (responseCode, responseText) {
+         if (responseCode === 200) {
+           var responseJson;
+           try {
+             responseJson = JSON.parse(responseText);
+           } catch (error) {
+             reject(responseText);
+           }
+           resolve(responseJson);
+         } else {
+           reject(responseText);
          }
-         onSuccess(responseJson);
-       } else {
-         onError(responseText);
-       }
+       });
      });
    }
 }
